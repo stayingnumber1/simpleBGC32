@@ -42,16 +42,17 @@
 #include "board.h"
 
 
-short int sinDataI16[SINARRAYSIZE];
+short int sinDataI16[SINARRAYSIZE];  //space size =1024*4=4K byte
+
 
 void initSinArray(void)
 {
 	int i;
 
 	for (i = 0; i < SINARRAYSIZE; i++)
-	{
-		float x = i * M_TWOPI / SINARRAYSIZE;
-		sinDataI16[i] = (short int)round(sinf(x) * SINARRAYSCALE);
+	{ 
+		float x = i * M_TWOPI / SINARRAYSIZE;                       //对2π周期  采样1024个点 分辨率360°/1024=0.35度
+		sinDataI16[i] = (short int)round(sinf(x) * SINARRAYSCALE);  //余弦值由[0~1]映射到[0~32767]
 	}
 }
 

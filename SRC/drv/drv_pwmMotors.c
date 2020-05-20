@@ -162,13 +162,13 @@ void TIM8_UP_IRQHandler(void) // roll axis
 	unsigned short cnt;
 	TIM8->SR &= ~TIM_SR_UIF; // clear UIF flag
 
-	__disable_irq_nested();
+	__disable_irq_nested();    //保证原子操作
 	cnt = TIM8->CNT;
 	updateCounter(ROLL, cnt);
 
 	if (cnt < MAX_CNT)
 	{
-		// make sure there is enough time to make all changes
+		// make sure there is enough time to make all changes    CCR1决定的是占空比
 		if (eepromConfig.rollEnabled)
 		{
 			TIM8->CCR1 = rollPhase[0];
@@ -304,7 +304,7 @@ static void timerPWMadvancedConfig(TIM_TypeDef *tim)
 	//Time Base configuration
 	TIM_TimeBaseInitStructure.TIM_Prescaler         = (4 - 1);                 // 72 Mhz / (3 + 1) = 18 MHz
 	TIM_TimeBaseInitStructure.TIM_CounterMode       = TIM_CounterMode_Up;
-	TIM_TimeBaseInitStructure.TIM_Period            = PWM_PERIOD - 1;          // 18 Mhz / 1000 = 18 kHz
+	TIM_TimeBaseInitStructure.TIM_Period            = PWM_PERIOD - 1;          // 18 Mhz / 1000 = 18 kHz  T=55us
 	TIM_TimeBaseInitStructure.TIM_ClockDivision     = 0;
 	TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
 
@@ -584,7 +584,9 @@ void pwmMotorDriverInit(void)
 
 	timerPWMadvancedConfig(TIM8);
 
-	TIM8->CNT = timer4timer5deadTimeDelay + 5 + PWM_PERIOD * 2 / 3;  // 751
+   
+	TIM8->CNT = timer4timer5deadTimeDelay + 5 + PWM_PERIOD * 2 / 3;  // 751    
+    //没有给自动重装的值
 
 	setupPWMIrq(TIM8_UP_IRQn);
 

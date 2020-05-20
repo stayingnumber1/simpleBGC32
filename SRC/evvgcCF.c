@@ -40,6 +40,7 @@ void initOrientation()
 
 	//得到当前方位 ,初始化一次，不要振动云台，因为这里只用了加速度数据计算欧拉角（加速度数据是长期可信的），但是加速度计对
 	//振动很敏感，所以为了减小误差，初始化方位的时候不要振动云台。
+	
 	sensors.evvgcCFAttitude500Hz[PITCH] = accAngleSmooth[PITCH];
 	sensors.evvgcCFAttitude500Hz[ROLL ] = accAngleSmooth[ROLL ];
 	sensors.evvgcCFAttitude500Hz[YAW  ] = 0.0f;

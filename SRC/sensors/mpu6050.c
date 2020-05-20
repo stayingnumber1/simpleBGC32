@@ -231,6 +231,7 @@ void computeMPU6050RTData(void)
 
 	mpu6050Calibrating = true;
 
+    //实际就是拿到 获取温度补偿系数
 	for (samples = 0; samples < 5000; samples++)
 	{
 		readMPU6050();
@@ -262,7 +263,7 @@ void computeMPU6050RTData(void)
 
 
 	//加速度标准化
-	accelOneG = sqrt(SQR(accelSum[XAXIS]) + SQR(accelSum[YAXIS]) + SQR(accelSum[ZAXIS]));
+	accelOneG = sqrt(SQR(accelSum[XAXIS]) + SQR(accelSum[YAXIS]) + SQR(accelSum[ZAXIS])); //重新修订加速度参考值
 
 	mpu6050Calibrating = false;
 }

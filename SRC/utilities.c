@@ -69,6 +69,7 @@ void matrixMultiply(uint8_t aRows, uint8_t aCols_bRows, uint8_t bCols, int16_t m
 		matrixC[i] = 0.0;
 	}
 
+    //三维矩阵就是三层循环 效率低  C=A+B
 	for (i = 0; i < aRows; i++)
 	{
 		for (j = 0; j < aCols_bRows; j++)

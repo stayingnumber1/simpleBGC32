@@ -10,7 +10,7 @@ extern volatile int __irq_nesting_counter;
 
 __attribute__((always_inline)) /*__STATIC_INLINE*/ void __disable_irq_nested(void)
 {
-	__disable_irq();
+	__disable_irq();              //屏蔽当前CPU上的所有中断
 	__irq_nesting_counter++;
 }
 

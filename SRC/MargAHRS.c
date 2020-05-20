@@ -191,14 +191,15 @@ void MargAHRSupdate(float gx, float gy, float gz,
 
 			//误差是由传感器测量的参考方向与方向之间的叉积,由此
 
-			//得到一个误差向量，通过这个误差向量来修正陀螺仪数据。
+            //还有问题  ========
+			//得到一个误差向量，通过这个误差向量来修正陀螺仪数据。    应该是修正加速度的数据   
 			exAcc = vy * az - vz * ay;
 			eyAcc = vz * ax - vx * az;
 			ezAcc = vx * ay - vy * ax;
 
 
 
-			gx += exAcc * kpAcc;//比例增益控制加速度计的收敛速度
+			gx += exAcc * kpAcc;  //比例增益控制加速度计的收敛速度  应该是陀螺仪的收敛速度
 			gy += eyAcc * kpAcc;
 			gz += ezAcc * kpAcc;
 
@@ -221,6 +222,7 @@ void MargAHRSupdate(float gx, float gy, float gz,
 		if ((magDataUpdate == true) && (norm != 0.0f))//如果入口参数magDataUpdate == true并且归一化的结果norm不是0，才对磁力计数据进行更新计算
 		{
 			normR = 1.0f / norm;//三轴磁场归一化
+			
 			mx *= normR;
 			my *= normR;
 			mz *= normR;
@@ -256,13 +258,23 @@ void MargAHRSupdate(float gx, float gy, float gz,
 			// time scaling is embedded in KpMag and KiMag
 
 			//使用估计的旧值与磁力计值进行更新，dT不能应用在磁力计计算中，因此时间被嵌入在KpMag 和 KiMag里面
+			//将加速度的信息和磁场的数据融合在一起
+
+		    //KpMag 和Kimag 都是由外部传入，没有动态更新，磁场的比例系数是静态的
+
 			gx += exMag * eepromConfig.KpMag;//比例增益控制磁强计收敛速度
 			gy += eyMag * eepromConfig.KpMag;
 			gz += ezMag * eepromConfig.KpMag;
 
+        
+		   //=============*******************======================
+           //陀螺仪数据可能会漂移，影响方向，使用磁罗盘提供绝对的方向来解决  
+		   //磁力计带宽不够，并且易受磁力干扰，但在这些弱点可以使用陀螺仪来补偿
+		   //加速器计和陀螺仪输出六轴信息，但是没有绝对的航向，适合快速移动并不需要绝对航向场景
+		   //9轴可以解决
+            
 
-
-			if (eepromConfig.KiMag > 0.0f)//用积分增益控制陀螺仪的偏差收敛速率
+			if (eepromConfig.KiMag > 0.0f)//用积分增益控制陀螺仪的偏差收敛速率   
 			{
 				exMagInt += exMag * eepromConfig.KiMag;
 				eyMagInt += eyMag * eepromConfig.KiMag;

@@ -50,7 +50,7 @@ void initPID(void)
 {
 	uint8_t index;
 
-	rc = 1.0f / ( TWO_PI * F_CUT );
+	rc = 1.0f / ( TWO_PI * F_CUT );   // 1/pi  
 
 	for (index = 0; index < NUMBER_OF_PIDS; index++)
 	{
@@ -127,8 +127,8 @@ float updatePID(float command/*遥控器控制的机械角度转换成电子角度*/,
 	//对历史三次微分项进行求平均
 	dAverage = (dTermFiltered + PIDparameters->lastDterm + PIDparameters->lastLastDterm) * 0.333333f;
 
-	PIDparameters->lastLastDterm = PIDparameters->lastDterm;//上次微分项保存到上上次微分项存储变量
-	PIDparameters->lastDterm = dTermFiltered;//当前微分项保存到上次微分项存储变量
+	PIDparameters->lastLastDterm = PIDparameters->lastDterm; //上次微分项保存到上上次微分项存储变量
+	PIDparameters->lastDterm = dTermFiltered;                //当前微分项保存到上次微分项存储变量
 
 	///////////////////////////////////
 	//返回PID运算结果

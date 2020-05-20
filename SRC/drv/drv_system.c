@@ -40,7 +40,7 @@
 
 // Cycle counter stuff - these should be defined by CMSIS, but they aren't
 #define DWT_CTRL    (*(volatile uint32_t *)0xE0001000)
-#define DWT_CYCCNT  ((volatile uint32_t *)0xE0001004)
+#define DWT_CYCCNT  ((volatile uint32_t *)0xE0001004)    //Cycle Count Register address
 #define CYCCNTENA   (1 << 0)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,10 +63,10 @@ static void cycleCounterInit(void)
 {
 	RCC_ClocksTypeDef clocks;
 	RCC_GetClocksFreq(&clocks);
-	usTicks = clocks.SYSCLK_Frequency / 1000000;
+	usTicks = clocks.SYSCLK_Frequency / 1000000;   //usTicks=72
 
 	// enable DWT access
-	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;  //CPU debug monitor
 	// enable the CPU cycle counter
 	DWT_CTRL |= CYCCNTENA;
 }
@@ -99,6 +99,8 @@ uint8_t systemReady = false;
 ///////////////////////////////////////////////////////////////////////////////
 // SysTick
 ///////////////////////////////////////////////////////////////////////////////
+
+//系统滴答定时器 1ms 中断一次
 
 void SysTick_Handler(void)
 {
@@ -198,10 +200,11 @@ void SysTick_Handler(void)
 //
 // Note: This can be called from within IRQ Handlers, so uses LDREX/STREX.
 // If a higher priority IRQ or DMA or anything happens the STREX will fail
-// and restart the loop. Otherwise the same number that was read is harmlessly
+// and restart the loop.  the same number that was Otherwiseread is harmlessly
 // written back.
 ///////////////////////////////////////////////////////////////////////////////
 
+//使用滴答定时器来做系统心跳，返回系统时间 单位：us
 uint32_t micros(void)
 {
 	register uint32_t oldCycle, cycle, timeMs;
@@ -214,13 +217,14 @@ uint32_t micros(void)
 	}
 	while (__STREXW(timeMs , &sysTickUptime));
 
-	return (timeMs * 1000) + (cycle - oldCycle) / usTicks;
+	return (timeMs * 1000) + (cycle - oldCycle) / usTicks; //使用滴答定时器 计算系统时间 unit:us
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // System Time in Milliseconds
 ///////////////////////////////////////////////////////////////////////////////
 
+//unit:ms
 uint32_t millis(void)
 {
 	return sysTickUptime;
@@ -261,7 +265,11 @@ void systemInit(void)
 	cycleCounterInit();
 
 	// SysTick
-	SysTick_Config(SystemCoreClock / 1000);
+	SysTick_Config(SystemCoreClock / 1000);  //SystemCoreClock = 72000000   系统滴答时间为1ms
+
+    // timer map
+	// TIM1 TIM8 
+	// TIM3 TIM4 TIM5 TIM6
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
 	                       RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO  |
@@ -276,8 +284,10 @@ void systemInit(void)
 
 	///////////////////////////////////////////////////////////////////////////
 
+    
 	checkFirstTime(false);
 	readEEPROM();
+
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);  // 2 bits for pre-emption priority, 2 bits for subpriority
 
@@ -328,15 +338,15 @@ void systemInit(void)
 
 	i2cInit(I2C2);
 	rcInit();
-	timingFunctionsInit();
+	timingFunctionsInit();  //启动 0.5us 计数器
 
 	BKPInit();
 
-	initFirstOrderFilter();
+	initFirstOrderFilter();  //初始化一阶低通滤波器
 	initPID();
-	initSinArray();
+	initSinArray();           //查表法计算sin值 使用4K 字节空间
 
-	orientIMU();
+	orientIMU();              //初始化方向矩阵
 
 	initMPU6050();
 	// initMag();

@@ -123,22 +123,31 @@ int main(void)
 #endif
 			frame_500Hz = false;
 
-			currentTime       = micros();//获取当前时间
+			currentTime       = micros();//获取当前时间 unit:us
 			deltaTime500Hz    = currentTime - previous500HzTime;//得到时间增量
 			previous500HzTime = currentTime;//保存当前时间
 
+            /*
+			系统使用了两个定时器 
+			1、systick unit: 1   us  提供系统绝对时间参考时间
+			2、TIM6    unit: 0.5 us  提供陀螺仪积分时间  还可以在精确到0.125us  这个是72M分频能够分出来的最小时间单位
+			*/
+     
+
+            //TIM6 是一个0.5us 滴答定时器 
 			TIM_Cmd(TIM6, DISABLE);//关闭TIM6
 			timerValue = TIM_GetCounter(TIM6);//得到TIM6计数值 ，单位 0.5 uSec Tick
 			TIM_SetCounter(TIM6, 0);//清空 TIMx->CNT 寄存器
 			TIM_Cmd(TIM6, ENABLE);//开启TIM6 ，准备获取下一次的时间增量
 
 			//定时器计数值*0.5us,得到时间增量，单位是 us
-			dt500Hz = (float)timerValue * 0.0000005f;
+			dt500Hz = (float)timerValue * 0.0000005f;    //Keil 中 x.xxxxxxxxf 8位小数参与运算
 
 			//(1/8192) * 9.8065  (8192 LSB = 1 G)
 			//（经过矩阵运算后的当前加速度数据-温度补偿偏差）* 最小分辨率 ，最小分辨率就是（(1/8192) * 9.8065）
 			//1G量程的8192个数字量分之1，对应重力加速度9.8065m/1G的8192分之1
 			//accelData500Hz数组是在Systick中断里面被更新的，更新的值是经过矩阵运算后的值，更新频率是500hz
+
 			sensors.accel500Hz[XAXIS] =  ((float)accelData500Hz[XAXIS] - accelTCBias[XAXIS]) * ACCEL_SCALE_FACTOR;
 			sensors.accel500Hz[YAXIS] =  ((float)accelData500Hz[YAXIS] - accelTCBias[YAXIS]) * ACCEL_SCALE_FACTOR;
 			sensors.accel500Hz[ZAXIS] = -((float)accelData500Hz[ZAXIS] - accelTCBias[ZAXIS]) * ACCEL_SCALE_FACTOR;

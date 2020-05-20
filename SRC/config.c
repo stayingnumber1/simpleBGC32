@@ -94,7 +94,7 @@ void writeEEPROM(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
+// 使用EEPROM 来保存系统参数
 void checkFirstTime(bool eepromReset)
 {
 	uint8_t test_val;
@@ -207,7 +207,8 @@ void checkFirstTime(bool eepromReset)
 
 		eepromConfig.imuOrientation = 4;
 
-		eepromConfig.rollMotorPoles  = 14.0f;
+        //系统初始状态
+		eepromConfig.rollMotorPoles  = 14.0f;    
 		eepromConfig.pitchMotorPoles = 14.0f;
 		eepromConfig.yawMotorPoles   = 14.0f;
 
